@@ -1,0 +1,54 @@
+---
+http_interactions:
+- request:
+    method: get
+    uri: "<BASE_URL>/api/v1/assignment-config"
+    body:
+      encoding: US-ASCII
+      string: ''
+    headers:
+      Authorization:
+      - Bearer test-api-key
+      User-Agent:
+      - Faraday v2.14.0
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      x-frame-options:
+      - SAMEORIGIN
+      x-xss-protection:
+      - '0'
+      x-content-type-options:
+      - nosniff
+      x-permitted-cross-domain-policies:
+      - none
+      referrer-policy:
+      - strict-origin-when-cross-origin
+      cache-control:
+      - max-age=300, private
+      etag:
+      - W/"eaeaff71b000e395871facad10381006"
+      content-type:
+      - application/json; charset=utf-8
+      vary:
+      - Accept
+      set-cookie:
+      - _abmeter_session=ZbW6RYepixzZ8MBMAyBHKPiUZsUGAts8p98UsUraC5IGLWkMj5qun1muCRLruSeWUpXp25yFYzrh3TY%2B2pKR%2FbHJoypJYq4Twu4aB0ayjOJMfuPubG%2B4Eh07wsbRJmWEuvuAm2b2wPPbQkjUWoi7ywH2nFQXioADCtqJTVhh5qQHjiyhqTNz3g%3D%3D--qSjyQYhbjxIPh9q3--EsvK2DV9vb8jz9R%2BBnxjUg%3D%3D;
+        path=/; httponly; samesite=lax, _abmeter_session=aF7Wz9sXiiRZ%2BKzdBcpRsOUoGi1WSE8lXLhecZqJWPzoKZRHoc1pCMsu4ZPC6IfCX2VTJQIrtLdID3lB2vnR3XpaVYnQVbPZyKJyoT%2BsKrILARdpymB7l653I3S4MGl18abaEPO0DB3Lg%2BIeHMQ7vsQvPo5Mfb%2BNL7V5oHfMwe7MULfu%2BWEIcw%3D%3D--%2FGIQKEB%2FtmNfBSf7--irytHblnhbiBla54ESxMlg%3D%3D;
+        path=/; httponly; samesite=lax
+      x-request-id:
+      - 264fa509-2d29-4489-ad6e-29e3fa56a55d
+      x-runtime:
+      - '0.023422'
+      server-timing:
+      - sql.active_record;dur=4.35, instantiation.active_record;dur=0.09, start_processing.action_controller;dur=0.00,
+        process_action.action_controller;dur=5.71
+      content-length:
+      - '214'
+    body:
+      encoding: UTF-8
+      string: '{"version":"v1","config":"{\"spaces\":[{\"id\":1,\"salt\":\"1a6a0a5ffdb1ec252ac5579b396982ff\"},{\"id\":2,\"salt\":\"537d7fc43e02ed835e10c4aa647177cc\"}],\"parameters\":[],\"feature_flags\":[],\"experiments\":[]}"}'
+  recorded_at: Fri, 30 Jan 2026 22:58:02 GMT
+recorded_with: VCR 6.4.0

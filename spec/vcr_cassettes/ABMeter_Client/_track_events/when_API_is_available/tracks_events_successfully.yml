@@ -1,0 +1,57 @@
+---
+http_interactions:
+- request:
+    method: post
+    uri: "<BASE_URL>/api/v1/events"
+    body:
+      encoding: UTF-8
+      string: '{"events":[{"event_slug":"test-event","user_id":"user789","occurred_at":"2026-02-07T18:29:56+00:00","custom_fields":{"color":"red"}},{"event_slug":"test-event","user_id":"user789","occurred_at":"2026-02-07T18:29:56+00:00","custom_fields":{"color":"green"}},{"event_slug":"test-event","user_id":"user789","occurred_at":"2026-02-07T18:29:56+00:00","custom_fields":{"color":"blue"}}]}'
+    headers:
+      Authorization:
+      - Bearer test-api-key
+      User-Agent:
+      - Faraday v2.14.0
+      Content-Type:
+      - application/json
+  response:
+    status:
+      code: 201
+      message: Created
+    headers:
+      x-frame-options:
+      - SAMEORIGIN
+      x-xss-protection:
+      - '0'
+      x-content-type-options:
+      - nosniff
+      x-permitted-cross-domain-policies:
+      - none
+      referrer-policy:
+      - strict-origin-when-cross-origin
+      content-type:
+      - application/json; charset=utf-8
+      vary:
+      - Accept
+      set-cookie:
+      - _abmeter_session=OpkWvKj0EoXRDxk65Am1Jpb9VbaLMfpIW13RtccH4ekDdHNFhvuPeA%2Bte98Iw0MjuMP7YWcesvg4024%2FNQhPggfmlljNtxues8JwCJHbI3EGxUXLouFWGTlTtfBcKPGbyjRgw9GX9TG5vpF3cgZbgTXxLMvQOl0Zr5Zx%2Be7eczrKI5jy3sEvCw%3D%3D--E7WPWYVtGBrSIbxO--ddHafqiDmUOMK4agBd1Oeg%3D%3D;
+        path=/; httponly; samesite=lax, _abmeter_session=bXuliMiJNew1WTRqPFyz%2F77LbLWgR5U2RWHfAgQ5%2BrQiWdD7LLX8Q6fhW1s4v27no1LS2qMIUhE%2FDYOmt%2Ba%2FBGL%2Fyj1oNgCBaNRN2vvjnpGD7%2BO316zY6QuxXdAmiUuM3iIMotifhCe%2B9i4MQh51QvOA0ywQBvo7ZiOQBrd%2FoxGdhkpx%2FwqgUg%3D%3D--JMXG2RsI%2BWAe2j8W--m6G90q8wFV6uxtRdhPJGig%3D%3D;
+        path=/; httponly; samesite=lax
+      etag:
+      - W/"f73a10000dd75129b64d47918a06dbba"
+      cache-control:
+      - max-age=0, private, must-revalidate
+      x-request-id:
+      - 27b258fc-9ad5-47ff-b890-c97cc82ba2d5
+      x-runtime:
+      - '0.072084'
+      server-timing:
+      - sql.active_record;dur=22.95, instantiation.active_record;dur=11.22, start_processing.action_controller;dur=0.00,
+        start_transaction.active_record;dur=0.01, transaction.active_record;dur=2.12,
+        process_action.action_controller;dur=29.25
+      content-length:
+      - '38'
+    body:
+      encoding: UTF-8
+      string: '{"recorded_count":3,"invalid_count":0}'
+  recorded_at: Sat, 07 Feb 2026 18:29:56 GMT
+recorded_with: VCR 6.4.0

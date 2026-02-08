@@ -1,0 +1,54 @@
+---
+http_interactions:
+- request:
+    method: get
+    uri: "<BASE_URL>/api/v1/assignment-config"
+    body:
+      encoding: US-ASCII
+      string: ''
+    headers:
+      Authorization:
+      - Bearer test-api-key
+      User-Agent:
+      - Faraday v2.14.0
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      x-frame-options:
+      - SAMEORIGIN
+      x-xss-protection:
+      - '0'
+      x-content-type-options:
+      - nosniff
+      x-permitted-cross-domain-policies:
+      - none
+      referrer-policy:
+      - strict-origin-when-cross-origin
+      cache-control:
+      - max-age=300, private
+      etag:
+      - W/"eaeaff71b000e395871facad10381006"
+      content-type:
+      - application/json; charset=utf-8
+      vary:
+      - Accept
+      set-cookie:
+      - _abmeter_session=Ao%2BjHgNYOwDthHDz0E4pLBqc8lTqdXGLRTB5i1hIWM7xK8%2BG0j4nekV6G%2FxVANv5WtUQCq62MOHXn52wfRD6mBpE38pCp81hyyeEAxxwnE842jh6euZzriJA2Ts8e%2BZaq9%2BYXVama7r4yKwXOHfuXvMEsJFAMXgQiR3uYZer7%2BRNERgVo0eP7A%3D%3D--RIuDkEIqtgXnGEnk--Fhv%2FKkWB7A1GGjbtNpwofg%3D%3D;
+        path=/; httponly; samesite=lax, _abmeter_session=JuIjItyPGnT2sCXo%2Ff%2BCQKrlraGXlOjwPBnTL71i9BeEZszGhSHSpP4bQ7kzTCCLG8M4BWx7bZxCmq0XqZIHMI5kSwvdX9c%2Fo8A4uS1e50htux8aHj1WaYdPnh%2BsELcYtcdo3dzW9BFbHL%2FFgMgktON%2B7PuHt6inxtJkbFQ%2FIJGE%2FHblVb5pRg%3D%3D--KRm2ccGcsxs0rsuN--mSD4JAnYTL4tX2EV%2FPPYyA%3D%3D;
+        path=/; httponly; samesite=lax
+      x-request-id:
+      - 35173eaf-cabe-4d9f-a513-a157d6c62781
+      x-runtime:
+      - '0.022939'
+      server-timing:
+      - sql.active_record;dur=1.38, instantiation.active_record;dur=0.09, start_processing.action_controller;dur=0.00,
+        process_action.action_controller;dur=6.87
+      content-length:
+      - '214'
+    body:
+      encoding: UTF-8
+      string: '{"version":"v1","config":"{\"spaces\":[{\"id\":1,\"salt\":\"1a6a0a5ffdb1ec252ac5579b396982ff\"},{\"id\":2,\"salt\":\"537d7fc43e02ed835e10c4aa647177cc\"}],\"parameters\":[],\"feature_flags\":[],\"experiments\":[]}"}'
+  recorded_at: Fri, 30 Jan 2026 22:58:02 GMT
+recorded_with: VCR 6.4.0

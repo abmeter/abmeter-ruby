@@ -1,0 +1,41 @@
+---
+http_interactions:
+- request:
+    method: post
+    uri: "<BASE_URL>/api/v1/events"
+    body:
+      encoding: UTF-8
+      string: '{"events":[{"event_slug":"test_event","user_id":"user789","occurred_at":"2026-01-30T22:58:01+00:00","custom_fields":{"color":"red"}},{"event_slug":"test_event","user_id":"user789","occurred_at":"2026-01-30T22:58:01+00:00","custom_fields":{"color":"green"}},{"event_slug":"test_event","user_id":"user789","occurred_at":"2026-01-30T22:58:01+00:00","custom_fields":{"color":"blue"}}]}'
+    headers:
+      Authorization:
+      - Bearer invalid-key
+      User-Agent:
+      - Faraday v2.14.0
+      Content-Type:
+      - application/json
+  response:
+    status:
+      code: 401
+      message: Unauthorized
+    headers:
+      content-type:
+      - application/json
+      set-cookie:
+      - _abmeter_session=q%2BvF%2B%2FAINwgjwqN8p2P%2FSTSorcOGDYk%2FceM9oECRFQunx9G1vRv0T42RunTw6kPjkgrnzLBdyoTodPlslC30ARPZIk5oEfch1cBFLzOJH%2BS1CkARspxWLuTZWUV8ItdLypqA1wSSKxz67a%2FjC25aLiQ3EZXAJLzxVkXYB81JbIhd2BFpcbFV9Q%3D%3D--R5acrQ6lmKrI%2B1lz--AsJfuINLF8CZFMo86QtPBQ%3D%3D;
+        path=/; httponly; samesite=lax, _abmeter_session=JEJInvYPuTAmsPGOghGf7nAa%2BUBiCNe6l47ItDIPNelSugLpenLMmBpBaw1utv4eteO3GsxPpMl1vGDJv%2BxgUsssJGKUYHYSdqWZYXQs1NjPnnTrOd0WpuCZluX21yc7Za3D0elHeJrUD1jJ5BV2EGLF7YZPIvgfaMQhljnk3rWpTc%2F9JaGanw%3D%3D--awZGMIrl7oEzHd9n--m9%2FOhetG8SQwma%2BZ%2BUR6sg%3D%3D;
+        path=/; httponly; samesite=lax
+      cache-control:
+      - no-cache
+      x-request-id:
+      - 8c651dd0-62af-4c8b-b17a-a06e7fc4fc6a
+      x-runtime:
+      - '0.053203'
+      server-timing:
+      - sql.active_record;dur=6.55
+      content-length:
+      - '36'
+    body:
+      encoding: UTF-8
+      string: '{"error":"Invalid or expired token"}'
+  recorded_at: Fri, 30 Jan 2026 22:58:01 GMT
+recorded_with: VCR 6.4.0

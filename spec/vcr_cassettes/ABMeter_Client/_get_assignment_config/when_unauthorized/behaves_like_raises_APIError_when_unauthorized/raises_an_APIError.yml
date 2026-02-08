@@ -1,0 +1,39 @@
+---
+http_interactions:
+- request:
+    method: get
+    uri: "<BASE_URL>/api/v1/assignment-config"
+    body:
+      encoding: US-ASCII
+      string: ''
+    headers:
+      Authorization:
+      - Bearer invalid-key
+      User-Agent:
+      - Faraday v2.14.0
+  response:
+    status:
+      code: 401
+      message: Unauthorized
+    headers:
+      content-type:
+      - application/json
+      set-cookie:
+      - _abmeter_session=r92qQkt%2FAMqZUqg%2F%2BO01sutliZF5nRaTKm6WzYCQN1lZ%2FEB48roW8OTaqIQXB5%2BPk5HU%2B0j3ibdL1cLizvMwNqcW3GLOIOFq%2B%2BigJ%2FzG8vnqtBjksCA3Y8m1GdphmCIwRaz6eF4LW%2BKqkPuzDG2MgeNNNpKypXtaFUifZFePCmS9EedfIWOZYg%3D%3D--4SEmLrC5E%2BJ7fAzy--Jlyi6C0jgg5lQIZRbJyXKA%3D%3D;
+        path=/; httponly; samesite=lax, _abmeter_session=smNbQbyfEANE8DoVfImjSaT5nGUShBc7NfO13StwtEpPt5%2FBEUaY6gk4rTUunbgTPRmNvxDVpRPS570PZKrYX4%2FPZsxOGFJR9StV33eIZ9BbHq9ye4i5Orf6xhOOfpzRU9564TheIP0ERBiQ12w8LCDDDMvQjCa9PgAxTpsEqfHmNzom6KBpAA%3D%3D--7%2B28egIVaTwQ1S4j--4RkCbuU3jK5FIc6OzBzrfw%3D%3D;
+        path=/; httponly; samesite=lax
+      cache-control:
+      - no-cache
+      x-request-id:
+      - 8e2903ee-b5b5-4139-b4ab-c3e46082cfba
+      x-runtime:
+      - '0.013432'
+      server-timing:
+      - sql.active_record;dur=0.32
+      content-length:
+      - '36'
+    body:
+      encoding: UTF-8
+      string: '{"error":"Invalid or expired token"}'
+  recorded_at: Fri, 30 Jan 2026 22:58:02 GMT
+recorded_with: VCR 6.4.0
