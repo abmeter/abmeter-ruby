@@ -20,9 +20,7 @@ module ABMeter
     def submit_exposures(exposures)
       return if exposures.empty?
 
-      response = @http_client.post('/api/v1/exposures', {
-                                     exposures: exposures
-                                   })
+      response = @http_client.post('/api/v1/exposures', exposures)
 
       raise APIError.new(response) unless response.success?
 
@@ -32,9 +30,7 @@ module ABMeter
     def track_events(events)
       return if events.empty?
 
-      response = @http_client.post('/api/v1/events', {
-                                     events: events
-                                   })
+      response = @http_client.post('/api/v1/events', events)
 
       raise APIError.new(response) unless response.success?
 

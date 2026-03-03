@@ -25,7 +25,7 @@ describe ABMeter do
         expect do
           described_class.configure { |config| config.api_key = 'valid_key' }
         end.not_to raise_error
-        expect(described_class.config.base_url).to eq('https://api.abmeter.ai')
+        expect(described_class.config.base_url).to eq('https://abmeter.ai')
       end
     end
 

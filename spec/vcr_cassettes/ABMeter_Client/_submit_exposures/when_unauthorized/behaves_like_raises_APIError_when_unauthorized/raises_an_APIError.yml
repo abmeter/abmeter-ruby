@@ -5,12 +5,12 @@ http_interactions:
     uri: "<BASE_URL>/api/v1/exposures"
     body:
       encoding: UTF-8
-      string: '{"exposures":[{"parameter_id":1,"space_id":1,"resolved_value":"blue","user_id":"user456","exposable_type":"Experiment","exposable_id":1,"audience_id":1},{"parameter_id":1,"space_id":1,"resolved_value":"red","user_id":"user456","exposable_type":"Experiment","exposable_id":1,"audience_id":2}]}'
+      string: '[{"parameter_id":1,"space_id":1,"resolved_value":"blue","user_id":"user456","exposable_type":"Experiment","exposable_id":1,"audience_id":1,"resolved_at":"2026-02-27T21:35:19+00:00"},{"parameter_id":1,"space_id":1,"resolved_value":"red","user_id":"user456","exposable_type":"Experiment","exposable_id":1,"audience_id":2,"resolved_at":"2026-02-27T21:35:19+00:00"}]'
     headers:
       Authorization:
       - Bearer invalid-key
       User-Agent:
-      - Faraday v2.14.0
+      - Faraday v2.14.1
       Content-Type:
       - application/json
   response:
@@ -21,21 +21,21 @@ http_interactions:
       content-type:
       - application/json
       set-cookie:
-      - _abmeter_session=jX7yJDF7%2FTpz7TykPHCXm741MoYNETUf2uCOS%2Fk5N8TsoGTawaY9JTnt9ZsF1f1BlWdBXyPaqpcZdZKILfrSVmQIVYHgbvP44zuA0tvef9QHd5TsEhI6q9ZxahuH5tENnXq9IvFDYMluErgW5Yeg19y9Vv8YpJU%2F1wSx%2FzOM3mT%2B7NQTvjBU0g%3D%3D--eetebKSZLSeWSx41--TsM%2Bw7uT9UIXGC9rDzBrKg%3D%3D;
-        path=/; httponly; samesite=lax, _abmeter_session=YpiVm3%2F1QsRUwu38%2BSytNIkAM1lSdcYb9nxCf8zvAGroaD9ECE35CFDlJLtrg7tw17y0p%2FxV3brysDLwMDxpspgY%2FbssG%2BC2vu1G83N%2B26joTSzUVFl9C4Bj6f%2B6FP39cJ2FbfdIXTCTb0vJyXWfUVKuNdOrvBrsLp8GlmZp0%2FEwjNRZkjJVLA%3D%3D--9S5ImkTQNhsflTAp--qCspbYTC4OaLghsnDWhvLQ%3D%3D;
+      - _abmeter_session=KoCevRYDfUEI%2FztxInZpMNKIjVAHhZjaeP7veRBGzwoCTC1RKVp42K%2BBtgyYUvSxD6xQGV2eued09Cz48G0tpME75fmiIzf2i1%2F3vz2267SUsA%2Br0%2BgfXk04TjQbCKHUkX6mj446YOcmTpiSnPy0%2BL4eKMvD%2BlPq2ymxvEmta%2B6ssGcpJENBnA%3D%3D--5wSShoCi7B4giv7D--gElNFBBhfvx4udrTIGsBsg%3D%3D;
+        path=/; httponly; samesite=lax, _abmeter_session=qBxg5fBDxbFBxsENn9AxMjyZElYsyX5E9RXZA9YipdXGWgu3okOH%2FKXXXvJ7q8AXfPkyURtkO202txESy0jjl%2BmA9UboTw%2BQmEVNumKvc74ASXxCgW7%2BecAfrR6i%2F%2FhA3CfxLTsTSuFDBGrrJgPVeA1wrI%2BXUTN%2B%2Ftl9H3u7ZW%2BFKD62rLQxUA%3D%3D--0BkeVoV6OWzg6QLL--kEEjAbjg4MOi0D5JZjyZaA%3D%3D;
         path=/; httponly; samesite=lax
       cache-control:
       - no-cache
       x-request-id:
-      - 2fee3082-321e-42fd-bed7-fd09f065323b
+      - 94cb3c6b-1dcf-4a5f-83a5-a30e0ec5c4c9
       x-runtime:
-      - '0.013711'
+      - '0.023079'
       server-timing:
-      - sql.active_record;dur=0.33
+      - sql.active_record;dur=10.81
       content-length:
       - '36'
     body:
       encoding: UTF-8
       string: '{"error":"Invalid or expired token"}'
-  recorded_at: Fri, 30 Jan 2026 22:58:02 GMT
+  recorded_at: Fri, 27 Feb 2026 21:35:19 GMT
 recorded_with: VCR 6.4.0
