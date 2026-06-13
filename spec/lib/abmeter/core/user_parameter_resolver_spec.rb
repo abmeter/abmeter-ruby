@@ -103,7 +103,7 @@ describe ABMeter::Core::UserParameterResolver do
         result = users.map { |user| resolver.exposure_for(user: user, parameter_slug: 'color') }
       end
 
-      puts "Exposure for 1000 users took: #{time.real * 1000}ms"
+      RSpec.configuration.reporter.message("Exposure for 1000 users took: #{time.real * 1000}ms")
 
       color_exposures = result
 
@@ -277,15 +277,15 @@ describe ABMeter::Core::UserParameterResolver do
 
           # Color should NEVER be attributed to E3 (id: 300) which only controls cache_strategy
           expect(exposure[:exposable_id]).not_to eq(300),
-            "User #{user.user_id}: color should not be attributed to E3 (id: 300)"
+                                                 "User #{user.user_id}: color should not be attributed to E3 (id: 300)"
 
           # It should be attributed to E1 (100), E2 (200), or nil (user not in any color experiment's range)
           expect([100, 200, nil]).to include(exposure[:exposable_id]),
-            "User #{user.user_id}: expected exposable_id in [100, 200, nil], got #{exposure[:exposable_id]}"
+                                     "User #{user.user_id}: expected exposable_id in [100, 200, nil], got #{exposure[:exposable_id]}"
 
           # Resolved value should be from the correct experiment or default
           expect(['default-color', 'red', 'blue']).to include(exposure[:resolved_value]),
-            "User #{user.user_id}: unexpected color value #{exposure[:resolved_value]}"
+                                                      "User #{user.user_id}: unexpected color value #{exposure[:resolved_value]}"
         end
       end
     end
@@ -299,15 +299,15 @@ describe ABMeter::Core::UserParameterResolver do
 
           # cache_strategy should NEVER be attributed to E1 (100) or E2 (200)
           expect([100, 200]).not_to include(exposure[:exposable_id]),
-            "User #{user.user_id}: cache_strategy should not be attributed to E1/E2"
+                                    "User #{user.user_id}: cache_strategy should not be attributed to E1/E2"
 
           # It should be attributed to E3 (300) or nil (user not in E3's range)
           expect([300, nil]).to include(exposure[:exposable_id]),
-            "User #{user.user_id}: expected exposable_id in [300, nil], got #{exposure[:exposable_id]}"
+                                "User #{user.user_id}: expected exposable_id in [300, nil], got #{exposure[:exposable_id]}"
 
           # Resolved value should be from E3 or default
           expect(['default-cache', 'aggressive']).to include(exposure[:resolved_value]),
-            "User #{user.user_id}: unexpected cache_strategy value #{exposure[:resolved_value]}"
+                                                     "User #{user.user_id}: unexpected cache_strategy value #{exposure[:resolved_value]}"
         end
       end
     end

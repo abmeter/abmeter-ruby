@@ -33,7 +33,7 @@ module ABMeter
           # Formula: (num * range) >> bits = (num * 100) >> 64
           # This maps [0, 2^64) uniformly to [0, 100)
           percentage = (num * 100) >> 64
-          
+
           # Add 1 to get 1-100 range instead of 0-99
           percentage + 1
         end

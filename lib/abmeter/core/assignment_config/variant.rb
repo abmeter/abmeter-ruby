@@ -16,7 +16,7 @@ module ABMeter
         end
 
         def self.from_json(variant)
-          parameter_values = variant[:parameter_values].map { |pv| [pv[:slug], pv[:value]] }.to_h
+          parameter_values = variant[:parameter_values].to_h { |pv| [pv[:slug], pv[:value]] }
           Variant.new(id: variant[:id], parameter_values: parameter_values)
         end
 

@@ -72,7 +72,6 @@ describe ABMeter::ResolverProvider do
     }.with_indifferent_access
   end
 
-
   let(:test_user) { ABMeter::Core::User.new(user_id: 'user123', email: 'user123@example.com') }
 
   before do

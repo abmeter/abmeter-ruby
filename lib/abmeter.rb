@@ -1,6 +1,5 @@
 require 'active_support/core_ext/hash/indifferent_access'
 require 'digest'
-require 'ostruct'
 
 # Core (zero-dependency assignment logic)
 require_relative 'abmeter/core'
@@ -17,6 +16,7 @@ require_relative 'abmeter/error_safety'
 module ABMeter
   class << self
     include ErrorSafety
+
     def config
       raise 'ABMeter not configured. Call ABMeter.configure { |config| ... } first.' unless @config
 

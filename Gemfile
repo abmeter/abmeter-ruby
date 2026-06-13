@@ -13,4 +13,6 @@ group :development, :test do
   # for better github actions reporting:
   gem 'rspec-github'
   gem 'vcr', '~> 6.2'
+  # benchmark stopped being a default gem in Ruby 4.0; a perf spec uses it.
+  gem 'benchmark'
 end

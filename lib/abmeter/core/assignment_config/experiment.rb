@@ -8,7 +8,9 @@ module ABMeter
 
         attr_reader :id, :range, :audience_variants, :space_id, :salt, :space_salt
 
-        def initialize(id:, range:, audience_variants:, space_id:, salt:, space_salt:)
+        # The six keyword args are this value object's assignment inputs; a
+        # params object would only add indirection for a plain data holder.
+        def initialize(id:, range:, audience_variants:, space_id:, salt:, space_salt:) # rubocop:disable Metrics/ParameterLists
           @id = id
           @range = range
           @audience_variants = audience_variants

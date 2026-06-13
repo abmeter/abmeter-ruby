@@ -93,7 +93,7 @@ describe ABMeter::Core::AssignmentConfig do
 
   describe 'with valid comprehensive config' do
     let(:config_json) { comprehensive_config_data.to_json }
-    let(:config) { ABMeter::Core::AssignmentConfig.from_json(config_json) }
+    let(:config) { described_class.from_json(config_json) }
 
     describe 'basic structure' do
       it 'loads all spaces' do
@@ -135,7 +135,7 @@ describe ABMeter::Core::AssignmentConfig do
 
     describe 'serialization' do
       it 'round-trips through JSON preserving all data' do
-        config_from_json = ABMeter::Core::AssignmentConfig.from_json(config.to_json)
+        config_from_json = described_class.from_json(config.to_json)
         expect(config_from_json.serialize).to eq(config.serialize)
       end
 
