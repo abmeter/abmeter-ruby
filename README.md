@@ -2,6 +2,8 @@
 
 A simple A/B testing client library for Ruby applications.
 
+> **Breaking change in 0.3.0:** `ABMeter.reset!` now discards queued data without any network I/O; use `ABMeter.reset` for the previous drain-on-exit behavior.
+
 ## Supported Ruby versions
 
 `abmeter` supports **Ruby 3.2 and newer**.
@@ -36,6 +38,18 @@ text = ABMeter.param('welcome_text', user)
 current_user.plan = purchased_plan.name
 user = ABMeter.user(id: current_user.id, email: current_user.email)
 ABMeter.event(`user_purchases_plan`, user, {plan: purchased_plan.name, price: purchased_plan.price})
+```
+
+## Shutdown
+
+```ruby
+# Graceful — bounded blocking, flushes pending exposures/events.
+# Returns true on clean shutdown, false if the timeout elapsed.
+ABMeter.reset(timeout: 5.0)
+
+# Immediate — non-blocking, discards anything still queued.
+# Use only when the process is exiting *right now* and you cannot afford I/O.
+ABMeter.reset!
 ```
 
 ## Development

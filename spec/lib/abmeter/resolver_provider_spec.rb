@@ -41,6 +41,7 @@ describe ABMeter::ResolverProvider do
         {
           'id' => 1,
           'space_id' => 1,
+          'salt' => 'exp-1-salt',
           'range' => [1, 100],
           'audience_variants' => [
             {
@@ -75,7 +76,7 @@ describe ABMeter::ResolverProvider do
   let(:test_user) { ABMeter::Core::User.new(user_id: 'user123', email: 'user123@example.com') }
 
   before do
-    ABMeter::AsyncSubmitter.reset!
+    ABMeter::AsyncSubmitter.reset(timeout: 0.1)
   end
 
   around do |example|

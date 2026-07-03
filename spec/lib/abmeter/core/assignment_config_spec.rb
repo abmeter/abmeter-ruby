@@ -20,6 +20,7 @@ describe ABMeter::Core::AssignmentConfig do
         {
           id: 100,
           space_id: 1,
+          salt: 'exp-100-salt',
           range: [1, 50],
           audience_variants: [
             {
@@ -51,6 +52,7 @@ describe ABMeter::Core::AssignmentConfig do
         {
           id: 101,
           space_id: 1,
+          salt: 'exp-101-salt',
           range: [51, 100],
           audience_variants: [
             {
@@ -89,6 +91,31 @@ describe ABMeter::Core::AssignmentConfig do
         }
       ]
     }
+  end
+
+  # Experiment#serialize must keep salt on the wire; when it is dropped every client
+  # deserializes salt = nil and audience bucketing silently diverges from the server.
+  describe 'experiment salt wire round-trip' do
+    it 'preserves experiment salt through Config#to_json → from_json' do
+      space = ABMeter::Core::AssignmentConfig::Space.new(id: 1, salt: 'space-1-salt')
+      audience = ABMeter::Core::AssignmentConfig::RandomAudience.new(id: 10, range: 1..100)
+      variant = ABMeter::Core::AssignmentConfig::Variant.new(id: 1, parameter_values: { 'button_color' => 'green' })
+      experiment = ABMeter::Core::AssignmentConfig::Experiment.new(
+        id: 100,
+        range: 1..100,
+        audience_variants: [[audience, variant]],
+        space_id: 1,
+        salt: 'abc123',
+        space_salt: 'space-1-salt'
+      )
+      config = ABMeter::Core::AssignmentConfig::Config.new(
+        spaces: [space], parameters: [], feature_flags: [], experiments: [experiment]
+      )
+
+      round_tripped = described_class.from_json(config.to_json)
+
+      expect(round_tripped.experiments.first.salt).to eq('abc123')
+    end
   end
 
   describe 'with valid comprehensive config' do

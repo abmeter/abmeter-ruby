@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe ABMeter do
-  before { described_class.reset! }
+  before { described_class.reset(timeout: 0.1) }
 
   describe '.configure' do
     context 'when api key is not provided' do

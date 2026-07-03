@@ -108,6 +108,7 @@ describe 'Assignment Algorithm Fairness' do
           {
             id: 1,
             space_id: 1,
+            salt: 'color-exp-salt',
             range: [1, 50], # 50% allocation
             audience_variants: [
               { audience: { id: 1, type: 'random', range: [1, 100] },
@@ -117,6 +118,7 @@ describe 'Assignment Algorithm Fairness' do
           {
             id: 2,
             space_id: 1,
+            salt: 'price-exp-salt',
             range: [51, 100], # 50% allocation
             audience_variants: [
               { audience: { id: 2, type: 'random', range: [1, 100] },
@@ -193,6 +195,7 @@ describe 'Assignment Algorithm Fairness' do
           {
             id: 1,
             space_id: 1,
+            salt: 'color-exp-salt',
             range: [1, 50],
             audience_variants: [
               { audience: { id: 1, type: 'random', range: [1, 50] }, variant: nil },
@@ -203,6 +206,7 @@ describe 'Assignment Algorithm Fairness' do
           {
             id: 2,
             space_id: 1,
+            salt: 'price-exp-salt',
             range: [51, 100],
             audience_variants: [
               { audience: { id: 3, type: 'random', range: [1, 50] }, variant: nil },

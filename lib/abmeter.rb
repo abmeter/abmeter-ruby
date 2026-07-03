@@ -64,12 +64,25 @@ module ABMeter
       end
     end
 
-    def reset!
-      AsyncSubmitter.shutdown
-
+    # Graceful, lossless, bounded blocking. Flushes pending exposures/events
+    # before clearing state. Returns true on clean shutdown, false if the
+    # timeout elapsed and the worker had to be killed.
+    def reset(timeout: AsyncSubmitter::DEFAULT_SHUTDOWN_TIMEOUT)
+      result = AsyncSubmitter.reset(timeout: timeout)
       @config = nil
       @client = nil
       @resolver_provider = nil
+      result
+    end
+
+    # Immediate, lossy, non-blocking. Kills the worker thread and discards
+    # queued exposures/events without any network I/O.
+    def reset!
+      AsyncSubmitter.reset!
+      @config = nil
+      @client = nil
+      @resolver_provider = nil
+      nil
     end
 
     def track_event(event_name, user_id, data)

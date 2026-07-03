@@ -43,6 +43,7 @@ module ABMeter
           {
             id: id,
             space_id: space_id,
+            salt: salt,
             range: [range.begin, range.end],
             audience_variants: audience_variants.map do |audience_variant|
               {

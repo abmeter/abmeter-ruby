@@ -17,7 +17,10 @@ describe ABMeter::AsyncSubmitter do
 
   around do |example|
     travel_to(frozen_time) do
-      described_class.reset!
+      # Reset shared class state between examples. The short timeout is just to
+      # keep teardown fast: no example leaves real work queued (the API client is
+      # a double), so there is nothing to drain and the wait returns immediately.
+      described_class.reset(timeout: 0.1)
       example.run
     end
   end
@@ -141,24 +144,12 @@ describe ABMeter::AsyncSubmitter do
       expect(described_class.worker_alive?).to be true
 
       described_class.shutdown
-      sleep 0.1 # Give thread time to stop
 
       expect(described_class.worker_alive?).to be false
     end
 
     it 'flushes remaining exposures' do
-      described_class.queue_exposure({ user_id: 1, parameter_id: 'param1', resolved_at: frozen_time })
-
-      expect(api_client).to receive(:submit_exposures)
-
-      described_class.shutdown
-    end
-
-    it 'flushes all exposures on shutdown' do
-      described_class.configure(api_client: api_client, config: config)
-
       expect(5).to be < ABMeter::AsyncSubmitter::BATCH_SIZE
-      expect(described_class.queue_size).to eq(0)
 
       5.times do |i|
         described_class.queue_exposure({ user_id: i + 1, parameter_id: "param#{i}", resolved_at: frozen_time })
@@ -170,17 +161,95 @@ describe ABMeter::AsyncSubmitter do
 
       expect(described_class.queue_size).to eq(0)
     end
+
+    it 'returns true on clean shutdown' do
+      expect(described_class.shutdown).to be true
+    end
+
+    it 'kills the worker and returns false if flush exceeds timeout' do
+      allow(api_client).to receive(:submit_exposures) { sleep 2 }
+      described_class.queue_exposure({ user_id: 1, parameter_id: 'param1', resolved_at: frozen_time })
+
+      expect(described_class.shutdown(timeout: 0.1)).to be false
+      expect(described_class.worker_alive?).to be false
+    end
+  end
+
+  describe '.shutdown!' do
+    before do
+      described_class.configure(api_client: api_client, config: config)
+      described_class.start
+    end
+
+    it 'stops the worker thread immediately' do
+      expect(described_class.worker_alive?).to be true
+
+      described_class.shutdown!
+      sleep 0.1 # Give the killed thread time to die
+
+      expect(described_class.worker_alive?).to be false
+    end
+
+    it 'does not call the api client' do
+      # Not a race: the worker's first act is to park in wait_for_next_flush for
+      # flush_interval (60s of real time — ConditionVariable#wait ignores travel_to),
+      # so it cannot flush in the microseconds before shutdown!. And shutdown! kills
+      # the thread rather than signaling it, so the killed worker never reaches either
+      # the periodic flush or the final drain. The no-submit guarantee is structural.
+      expect(api_client).not_to receive(:submit_exposures)
+
+      described_class.queue_exposure({ user_id: 1, parameter_id: 'param1', resolved_at: frozen_time })
+
+      described_class.shutdown!
+    end
+
+    it 'logs a warning with dropped counts' do
+      described_class.queue_exposure({ user_id: 1, parameter_id: 'param1', resolved_at: frozen_time })
+
+      described_class.shutdown!
+
+      expect(log_output.string).to match(/dropped_queue: 1, dropped_retry: 0/)
+    end
+  end
+
+  describe '.reset' do
+    before do
+      described_class.configure(api_client: api_client, config: config)
+      described_class.start
+    end
+
+    it 'drains the in-flight batch losslessly and clears state' do
+      exposure = { user_id: 1, parameter_id: 'param1', resolved_at: frozen_time }
+      described_class.queue_exposure(exposure)
+
+      expect(api_client).to receive(:submit_exposures).with([exposure])
+
+      expect(described_class.reset).to be true
+
+      expect(described_class.worker_alive?).to be false
+      expect(described_class.queue_size).to eq(0)
+      expect(described_class.api_client).to be_nil
+      expect(described_class.logger).to be_nil
+    end
+
+    it 'returns false when the drain exceeds the timeout' do
+      allow(api_client).to receive(:submit_exposures) { sleep 2 }
+      described_class.queue_exposure({ user_id: 1, parameter_id: 'param1', resolved_at: frozen_time })
+
+      expect(described_class.reset(timeout: 0.1)).to be false
+      expect(described_class.worker_alive?).to be false
+    end
   end
 
   describe '.reset!' do
     before do
-      allow(api_client).to receive(:submit_exposures)
       described_class.configure(api_client: api_client, config: config)
       described_class.start
       described_class.queue_exposure({ user_id: 1, parameter_id: 'param1' })
     end
 
-    it 'stops worker thread and clears all state' do
+    it 'stops worker thread and clears all state without submitting' do
+      expect(api_client).not_to receive(:submit_exposures)
       expect(described_class.worker_alive?).to be true
       expect(described_class.queue_size).to eq(1)
 

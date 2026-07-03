@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe ABMeter::ErrorSafety do
   around do |example|
-    ABMeter.reset!
+    ABMeter.reset(timeout: 0.1)
     example.run
   end
 

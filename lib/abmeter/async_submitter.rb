@@ -4,6 +4,7 @@ module ABMeter
     BATCH_SIZE = 100
     MAX_SUBMIT_ATTEMPTS = 3
     MAX_RETRY_QUEUE_SIZE = 1000
+    DEFAULT_SHUTDOWN_TIMEOUT = 5.0 # seconds — max time a graceful shutdown blocks before killing the worker
 
     @queue = Queue.new
     @retry_queue = []
@@ -12,6 +13,9 @@ module ABMeter
     @worker_thread = nil
     @flush_interval = DEFAULT_FLUSH_INTERVAL
     @logger = nil
+    @stopping = false
+    @stop_mutex = Mutex.new
+    @stop_signal = ConditionVariable.new
 
     class << self
       attr_reader :api_client, :flush_interval, :logger, :retry_queue
@@ -63,20 +67,47 @@ module ABMeter
         end
       end
 
-      def shutdown
+      # Graceful, lossless, bounded blocking. Signals the worker to stop, which
+      # triggers a final flush of the main and retry queues, then waits up to
+      # `timeout` seconds for that flush to finish and the worker to exit. Kills
+      # the worker (dropping anything still unflushed) if the timeout elapses.
+      # Returns true on clean shutdown, false on timeout.
+      def shutdown(timeout: DEFAULT_SHUTDOWN_TIMEOUT)
+        worker = @worker_thread
+        return true unless worker
+
+        request_stop
+        joined = worker.join(timeout)
+        if joined.nil?
+          worker.kill
+          worker.join
+          log_error("Graceful shutdown timed out after #{timeout}s, killing worker (queued: #{@queue.size}, retry: #{@retry_queue.size})")
+        end
+        !joined.nil?
+      end
+
+      # Immediate, lossy, non-blocking. Kills the worker and discards queued
+      # items without any network I/O.
+      def shutdown!
         @worker_thread&.kill
-        # Flush all remaining exposures
-        flush until @queue.empty?
+        dropped_queue = @queue.size
+        dropped_retry = @retry_queue.size
+        if dropped_queue.positive? || dropped_retry.positive?
+          log_error("Immediate shutdown, dropping items (dropped_queue: #{dropped_queue}, dropped_retry: #{dropped_retry})")
+        end
+        true
+      end
+
+      def reset(timeout: DEFAULT_SHUTDOWN_TIMEOUT)
+        result = shutdown(timeout: timeout)
+        clear_state
+        result
       end
 
       def reset!
-        shutdown
-        @queue = Queue.new
-        @retry_queue = []
-        @api_client = nil
-        @worker_thread = nil
-        @flush_interval = DEFAULT_FLUSH_INTERVAL
-        @logger = nil
+        shutdown!
+        clear_state
+        true
       end
 
       def worker_alive?
@@ -92,15 +123,51 @@ module ABMeter
       def start_worker
         return if worker_alive?
 
+        @stopping = false
         @worker_thread = Thread.new do
-          loop do
-            sleep @flush_interval
-            flush
+          until @stopping
+            begin
+              wait_for_next_flush
+              flush unless @stopping
+            rescue StandardError => e
+              # Log error but keep worker running
+              log_error("Worker error: #{e.message}")
+            end
+          end
+          # Final drain on graceful stop — bounded by the caller's join timeout.
+          begin
+            flush until @queue.empty? && @retry_queue.empty?
           rescue StandardError => e
-            # Log error but keep worker running
-            log_error("Worker error: #{e.message}")
+            log_error("Final flush error: #{e.message}")
           end
         end
+      end
+
+      # Sleeps for @flush_interval, waking immediately when request_stop
+      # signals. Re-checking @stopping under @stop_mutex closes the
+      # lost-wakeup window between the worker loop's flag check and the wait
+      # (a bare sleep + Thread#wakeup would drop a signal sent in that gap).
+      def wait_for_next_flush
+        @stop_mutex.synchronize do
+          @stop_signal.wait(@stop_mutex, @flush_interval) unless @stopping
+        end
+      end
+
+      def request_stop
+        @stop_mutex.synchronize do
+          @stopping = true
+          @stop_signal.broadcast
+        end
+      end
+
+      def clear_state
+        @queue = Queue.new
+        @retry_queue = []
+        @api_client = nil
+        @worker_thread = nil
+        @flush_interval = DEFAULT_FLUSH_INTERVAL
+        @logger = nil
+        @stopping = false
       end
 
       def submit_exposures(exposures)

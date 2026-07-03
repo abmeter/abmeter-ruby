@@ -74,6 +74,7 @@ describe ABMeter::Core::UserParameterResolver do
           {
             id: 400,
             space_id: 1,
+            salt: 'exp-400-salt',
             range: [1, 100],
             audience_variants: [
               { audience: { id: 100, type: 'random', salt: 'control-salt', range: [1, 20] }, variant: nil },
@@ -160,6 +161,7 @@ describe ABMeter::Core::UserParameterResolver do
           {
             id: 100,
             space_id: 1,
+            salt: 'exp-color-salt',
             range: [1, 100],
             audience_variants: [
               {
@@ -172,6 +174,7 @@ describe ABMeter::Core::UserParameterResolver do
           {
             id: 200,
             space_id: 2,
+            salt: 'exp-cache-salt',
             range: [1, 100],
             audience_variants: [
               {
@@ -225,6 +228,7 @@ describe ABMeter::Core::UserParameterResolver do
           {
             id: 100,
             space_id: 1,
+            salt: 'exp-e1-salt',
             range: [1, 40],
             audience_variants: [
               { audience: { id: 10, type: 'random', salt: 'e1-control-salt', range: [1, 50] }, variant: nil },
@@ -238,6 +242,7 @@ describe ABMeter::Core::UserParameterResolver do
           {
             id: 200,
             space_id: 1,
+            salt: 'exp-e2-salt',
             range: [41, 70],
             audience_variants: [
               { audience: { id: 20, type: 'random', salt: 'e2-control-salt', range: [1, 50] }, variant: nil },
@@ -251,6 +256,7 @@ describe ABMeter::Core::UserParameterResolver do
           {
             id: 300,
             space_id: 1,
+            salt: 'exp-e3-salt',
             range: [71, 100],
             audience_variants: [
               { audience: { id: 30, type: 'random', salt: 'e3-control-salt', range: [1, 50] }, variant: nil },
@@ -358,6 +364,95 @@ describe ABMeter::Core::UserParameterResolver do
       expect(exposure[:exposable_type]).to eq('Experiment')
       expect(exposure[:exposable_id]).to eq(100)
       expect(exposure[:audience_id]).to eq(10) # Control audience
+    end
+  end
+
+  # Per-experiment salt must survive the wire format so audience assignment is
+  # independent across experiments. With salt dropped, every experiment hashes the
+  # same nil salt and all assignments collapse into one global per-user shuffle
+  # (φ = 1.0 between any two 50/50 experiments).
+  describe 'cross-experiment assignment independence over the wire' do
+    let(:user_count) { 1000 }
+    let(:users) do
+      user_count.times.map { |i| ABMeter::Core::User.new(user_id: "user-#{i}", email: "user-#{i}@test.com") }
+    end
+
+    def independence_config_data(exp1_salt:, exp2_salt:)
+      {
+        spaces: [
+          { id: 1, salt: 'alpha-space-salt' },
+          { id: 2, salt: 'beta-space-salt' }
+        ],
+        parameters: [
+          { id: 1, slug: 'alpha', parameter_type: 'String', default_value: 'alpha-default', space_id: 1 },
+          { id: 2, slug: 'beta', parameter_type: 'String', default_value: 'beta-default', space_id: 2 }
+        ],
+        experiments: [
+          {
+            id: 100, space_id: 1, range: [1, 100], salt: exp1_salt,
+            audience_variants: [
+              { audience: { id: 10, type: 'random', range: [1, 50] }, variant: nil },
+              {
+                audience: { id: 11, type: 'random', range: [51, 100] },
+                variant: { id: 1, parameter_values: [{ slug: 'alpha', value: 'alpha-test' }] }
+              }
+            ]
+          },
+          {
+            id: 200, space_id: 2, range: [1, 100], salt: exp2_salt,
+            audience_variants: [
+              { audience: { id: 20, type: 'random', range: [1, 50] }, variant: nil },
+              {
+                audience: { id: 21, type: 'random', range: [51, 100] },
+                variant: { id: 2, parameter_values: [{ slug: 'beta', value: 'beta-test' }] }
+              }
+            ]
+          }
+        ],
+        feature_flags: []
+      }
+    end
+
+    # φ (phi) coefficient: correlation of two binary variables on a 2×2 table —
+    # 0 = independent assignment, ±1 = identical. Independent per-experiment salts
+    # give φ ≈ 0; a dropped salt makes both experiments hash the same percentile, so
+    # the two assignments become identical and φ = 1.
+    def phi_coefficient(pairs)
+      n11 = pairs.count { |a, b| a && b }
+      n10 = pairs.count { |a, b| a && !b }
+      n01 = pairs.count { |a, b| !a && b }
+      n00 = pairs.count { |a, b| !a && !b }
+      denominator = Math.sqrt((n11 + n10) * (n01 + n00) * (n11 + n01) * (n10 + n00))
+      return 0.0 if denominator.zero?
+
+      ((n11 * n00) - (n10 * n01)) / denominator
+    end
+
+    def assignment_pairs(resolver)
+      users.map do |user|
+        alpha = resolver.exposure_for(user: user, parameter_slug: 'alpha')
+        beta = resolver.exposure_for(user: user, parameter_slug: 'beta')
+        [alpha[:audience_id] == 11, beta[:audience_id] == 21]
+      end
+    end
+
+    it 'assigns audiences independently when the config travels the wire format' do
+      config_data = independence_config_data(exp1_salt: 'space-1-exp-salt', exp2_salt: 'space-2-exp-salt')
+      config = ABMeter::Core::AssignmentConfig.from_json(config_data.to_json)
+      # Re-serialize through Config#serialize (the producer under test) and re-parse:
+      wire_config = ABMeter::Core::AssignmentConfig.from_json(config.to_json)
+      resolver = described_class.new(config: wire_config)
+
+      expect(phi_coefficient(assignment_pairs(resolver)).abs).to be < 0.1
+    end
+
+    # Guards the test itself: with salts absent from the wire payload, assignment
+    # degenerates into one global shuffle and the phi coefficient saturates.
+    it 'detects the degenerate correlation when salts are missing from the wire payload' do
+      config_data = independence_config_data(exp1_salt: nil, exp2_salt: nil)
+      resolver = described_class.new(config: ABMeter::Core::AssignmentConfig.from_json(config_data.to_json))
+
+      expect(phi_coefficient(assignment_pairs(resolver))).to be > 0.9
     end
   end
 
