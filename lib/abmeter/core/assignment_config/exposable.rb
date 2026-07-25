@@ -7,7 +7,11 @@ module ABMeter
         protected
 
         def resolve_parameter_value(parameter, variant)
-          variant&.parameter_value(parameter.slug) || parameter.default_value
+          # Fall back to the default only when the variant does not set this
+          # parameter (nil). An explicitly-set falsy value (false, 0, "") is a
+          # real override and must win — `||` would wrongly drop a Boolean false.
+          value = variant&.parameter_value(parameter.slug)
+          value.nil? ? parameter.default_value : value
         end
 
         def validate_expose_parameter_args!(user_id, parameter, audience)

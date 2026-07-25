@@ -43,7 +43,6 @@ module ABMeter
 
       def validate_user!(user)
         raise ArgumentError, 'User must have user_id' unless user.respond_to?(:user_id)
-        raise ArgumentError, 'User must have email' unless user.respond_to?(:email)
       end
 
       def find_matching_feature_flag(user, parameter_slug)

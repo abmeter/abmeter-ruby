@@ -1,3 +1,5 @@
+require 'time' # Time#iso8601
+
 module ABMeter
   class AsyncSubmitter
     # Private internal constants for async submitter behavior

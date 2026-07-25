@@ -64,6 +64,8 @@ module ABMeter
         end
 
         def matches?(user)
+          return false if user.email.nil?
+
           user.email.match?(predicate)
         end
 

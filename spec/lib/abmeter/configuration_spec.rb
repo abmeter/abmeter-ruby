@@ -98,4 +98,17 @@ describe ABMeter do
       end
     end
   end
+
+  describe 'User' do
+    it 'is the same class object as Core::User' do
+      expect(described_class::User).to be(ABMeter::Core::User)
+    end
+
+    it 'builds a working user with email defaulting to nil' do
+      user = described_class::User.new(user_id: 'u')
+
+      expect(user.user_id).to eq('u')
+      expect(user.email).to be_nil
+    end
+  end
 end

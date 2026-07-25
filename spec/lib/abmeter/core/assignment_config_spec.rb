@@ -343,4 +343,25 @@ describe ABMeter::Core::AssignmentConfig do
       end
     end
   end
+
+  describe ABMeter::Core::AssignmentConfig::PredicateAudience do
+    subject(:audience) { described_class.new(id: 1, predicate: '@example.com$') }
+
+    it 'matches a user whose email satisfies the predicate' do
+      user = ABMeter::Core::User.new(user_id: 'u', email: 'jane@example.com')
+      expect(audience.matches?(user)).to be true
+    end
+
+    it 'does not match a user whose email fails the predicate' do
+      user = ABMeter::Core::User.new(user_id: 'u', email: 'jane@other.com')
+      expect(audience.matches?(user)).to be false
+    end
+
+    # Email is optional; a user without one simply never matches an email predicate.
+    it 'returns false (without raising) for a user with no email' do
+      user = ABMeter::Core::User.new(user_id: 'u')
+      expect { audience.matches?(user) }.not_to raise_error
+      expect(audience.matches?(user)).to be false
+    end
+  end
 end

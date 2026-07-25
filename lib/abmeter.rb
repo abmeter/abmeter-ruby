@@ -14,6 +14,12 @@ require_relative 'abmeter/async_submitter'
 require_relative 'abmeter/error_safety'
 
 module ABMeter
+  # Top-level alias for the canonical user value object. Lets callers write
+  # `ABMeter::User.new(user_id: ...)` instead of reaching into `Core::User`,
+  # mirroring `abmeter.User(...)` in the Python SDK. Same class object, so
+  # `is_a?`/`===`/`instance_of?` keep working; `Core::User` stays canonical.
+  User = Core::User
+
   class << self
     include ErrorSafety
 

@@ -500,4 +500,107 @@ describe ABMeter::Core::UserParameterResolver do
       expect(exposure[:resolved_value]).to eq('true')
     end
   end
+
+  # A variant that explicitly overrides a parameter to a falsy value must win.
+  # The platform wire format casts values to their native type (Boolean false,
+  # Integer 0, empty String), so `variant_value || default` would wrongly drop a
+  # `false` override and fall back to the default.
+  describe 'with a variant overriding parameters to falsy values' do
+    let(:config_json) do
+      {
+        spaces: [{ id: 1, salt: 'main-space-salt' }],
+        parameters: [
+          { id: 1, slug: 'dark_mode', parameter_type: 'Boolean', default_value: 'true', space_id: 1 },
+          { id: 2, slug: 'max_retries', parameter_type: 'Integer', default_value: '3', space_id: 1 },
+          { id: 3, slug: 'banner_text', parameter_type: 'String', default_value: 'welcome', space_id: 1 }
+        ],
+        experiments: [],
+        feature_flags: [
+          {
+            id: 100,
+            audience: { id: 10, type: 'user_list', user_ids: ['beta-user-1'] },
+            variant: {
+              id: 1,
+              parameter_values: [
+                { slug: 'dark_mode', value: false },
+                { slug: 'max_retries', value: 0 },
+                { slug: 'banner_text', value: '' }
+              ]
+            }
+          }
+        ]
+      }.to_json
+    end
+
+    let(:config) { ABMeter::Core::AssignmentConfig.from_json(config_json) }
+    let(:resolver) { described_class.new(config: config) }
+    let(:beta_user) { ABMeter::Core::User.new(user_id: 'beta-user-1', email: 'beta@example.com') }
+
+    it 'resolves a Boolean false override instead of the default' do
+      exposure = resolver.exposure_for(user: beta_user, parameter_slug: 'dark_mode')
+      expect(exposure[:exposable_type]).to eq('FeatureFlag')
+      expect(exposure[:resolved_value]).to eq(false)
+    end
+
+    it 'resolves an Integer 0 override instead of the default' do
+      exposure = resolver.exposure_for(user: beta_user, parameter_slug: 'max_retries')
+      expect(exposure[:resolved_value]).to eq(0)
+    end
+
+    it 'resolves an empty String override instead of the default' do
+      exposure = resolver.exposure_for(user: beta_user, parameter_slug: 'banner_text')
+      expect(exposure[:resolved_value]).to eq('')
+    end
+  end
+
+  # Email is an optional targeting field, not part of identity. A user built with
+  # only a user_id resolves through user_list and random audiences normally.
+  describe 'with a user that has no email' do
+    let(:config_json) do
+      {
+        spaces: [{ id: 1, salt: 'main-space-salt' }],
+        parameters: [
+          { id: 1, slug: 'color', parameter_type: 'String', default_value: 'default-color', space_id: 1 }
+        ],
+        experiments: [
+          {
+            id: 400,
+            space_id: 1,
+            salt: 'exp-400-salt',
+            range: [1, 100],
+            audience_variants: [
+              {
+                audience: { id: 101, type: 'random', salt: 'test-salt', range: [1, 100] },
+                variant: { id: 201, parameter_values: [{ slug: 'color', value: 'green' }] }
+              }
+            ]
+          }
+        ],
+        feature_flags: [
+          {
+            id: 200,
+            audience: { id: 10, type: 'user_list', user_ids: ['internal-user-1'] },
+            variant: { id: 100, parameter_values: [{ slug: 'color', value: 'blue' }] }
+          }
+        ]
+      }.to_json
+    end
+
+    let(:config) { ABMeter::Core::AssignmentConfig.from_json(config_json) }
+    let(:resolver) { described_class.new(config: config) }
+
+    it 'resolves a user_list feature flag without raising' do
+      listed_user = ABMeter::Core::User.new(user_id: 'internal-user-1')
+      exposure = resolver.exposure_for(user: listed_user, parameter_slug: 'color')
+      expect(exposure[:exposable_type]).to eq('FeatureFlag')
+      expect(exposure[:resolved_value]).to eq('blue')
+    end
+
+    it 'resolves a random-audience experiment for an unlisted no-email user' do
+      other_user = ABMeter::Core::User.new(user_id: 'someone-else')
+      exposure = resolver.exposure_for(user: other_user, parameter_slug: 'color')
+      expect(exposure[:exposable_type]).to eq('Experiment')
+      expect(exposure[:resolved_value]).to eq('green')
+    end
+  end
 end

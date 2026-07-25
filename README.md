@@ -1,6 +1,6 @@
 # ABMeter Gem
 
-A simple A/B testing client library for Ruby applications.
+[ABMeter](https://abmeter.ai) is a feature-flag and A/B-testing platform. You define parameters, experiments, and feature flags in the ABMeter Lab; this gem reads the value assigned to each user in your Ruby app and reports events back.
 
 > **Breaking change in 0.3.0:** `ABMeter.reset!` now discards queued data without any network I/O; use `ABMeter.reset` for the previous drain-on-exit behavior.
 
@@ -22,23 +22,34 @@ And then execute:
 $ bundle install
 ```
 
+## Getting an API key
+
+Sign up at [abmeter.ai](https://abmeter.ai), then in the **Lab** open **API Keys** and create one. Expose it to your app (e.g. as `ABMETER_API_KEY`).
+
 ## Usage
 
+Configure the client once at startup:
+
 ```ruby
-# configure the client
 ABMeter.configure do |config|
   config.api_key = ENV['ABMETER_API_KEY']
 end
-
-# Somewhere in the renedring code:
-user = ABMeter.user(id: current_user.id, email: current_user.email)
-text = ABMeter.param('welcome_text', user)
-
-# Somewhere in the model code:
-current_user.plan = purchased_plan.name
-user = ABMeter.user(id: current_user.id, email: current_user.email)
-ABMeter.event(`user_purchases_plan`, user, {plan: purchased_plan.name, price: purchased_plan.price})
 ```
+
+The example below assumes a parameter `welcome_text` (in a space, with a variant, controlled by a running experiment or feature flag) and an event type `user_purchases_plan` already exist — create them through the ABMeter API or, more easily, your AI assistant over MCP. Until they do, `resolve_parameter` just returns the parameter's default and `track_event` rejects unknown event types.
+
+```ruby
+# In request handling: read the value assigned to this user. `user_id` is the
+# only required field; an optional `email:` is available for predicate-based
+# (email-pattern) audience targeting.
+user = ABMeter::User.new(user_id: current_user.id)
+text = ABMeter.resolve_parameter(user: user, parameter_slug: 'welcome_text')
+
+# In business logic: record an action that feeds a metric.
+ABMeter.track_event('user_purchases_plan', current_user.id, { plan: purchased_plan.name, price: purchased_plan.price })
+```
+
+The two calls are one loop: the experiment varies `welcome_text`, and the event feeds a metric whose effect the experiment measures across variants. Note that `resolve_parameter` is **not** a pure read — it resolves the value locally and records an exposure in the background; use `get_exposure` for the same resolution without submitting. Full guides live at [abmeter.ai](https://abmeter.ai).
 
 ## Shutdown
 
